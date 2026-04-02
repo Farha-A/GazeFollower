@@ -12,6 +12,7 @@ from screeninfo import get_monitors
 
 class CalibrationMode(IntEnum):
     """Enum representing calibration modes"""
+    TWENTY_POINT = 20
     THIRTEEN_POINT = 13
     NINE_POINT = 9
     FIVE_POINT = 5
@@ -65,5 +66,7 @@ class DefaultConfig:
             self._cali_mode = CalibrationMode.NINE_POINT
         elif mode == 13:
             self._cali_mode = CalibrationMode.THIRTEEN_POINT
+        elif mode == 20:
+            self._cali_mode = CalibrationMode.TWENTY_POINT
         else:
-            raise ValueError("Invalid calibration mode. Must be 5, 9 13, or a CalibrationMode instance.")
+            raise ValueError("Invalid calibration mode. Must be 5, 9, 13, 20, or a CalibrationMode instance.")

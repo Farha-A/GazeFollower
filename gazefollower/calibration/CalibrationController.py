@@ -20,6 +20,7 @@ class CalibrationController:
         self._nine_cali_idx = [23, 1, 5, 9, 19, 27, 37, 41, 45, 23]
         self._five_cali_idx = [23, 1, 9, 37, 45, 23]
         self._thirteen_cali_idx = [23, 1, 5, 9, 12, 16, 19, 27, 30, 34, 37, 41, 45, 23]
+        self._twenty_cali_idx = [23, 1, 3, 5, 7, 9, 12, 14, 16, 19, 21, 25, 27, 30, 32, 34, 37, 39, 41, 45, 23]
 
         self._six_vali_idx = [2, 8, 22, 24, 38, 44]
         self._eight_vali_idx = [2, 8, 13, 15, 31, 33, 38, 44]
@@ -54,8 +55,10 @@ class CalibrationController:
             position_idx = self._nine_cali_idx[self._current_index]
         elif self.cali_mode == CalibrationMode.FIVE_POINT:
             position_idx = self._five_cali_idx[self._current_index]
-        else:
+        elif self.cali_mode == CalibrationMode.THIRTEEN_POINT:
             position_idx = self._thirteen_cali_idx[self._current_index]
+        else:
+            position_idx = self._twenty_cali_idx[self._current_index]
 
         percent_point = self.normalized_point[position_idx - 1]
         self.x = percent_point[0]
