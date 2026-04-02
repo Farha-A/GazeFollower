@@ -198,8 +198,10 @@ class GazeFollower:
 
     def calibrate(self, win=None):
         """
-        Initiates a calibration session for gaze estimation and optionally validates
-        the calibration with provided validation points.
+        Initiates a calibration session for gaze estimation with three phases:
+        1. Initial calibration with the configured calibration mode
+        2. Right-tilt calibration (5 points on the right side)
+        3. Left-tilt calibration (5 points on the left side)
 
         Parameters:
             win (None|pygame.Surface|psychopy.visual.Window): The pygame window or psychopy window.
@@ -216,16 +218,34 @@ class GazeFollower:
 
         self.calibration_ui = CalibrationUI(win=win, backend_name=backend_name)
         while 1:
-            # new session
+            # Phase 1: Initial calibration
             self._new_calibration_session()
             self._calibration_controller.new_session()
             self.calibration_ui.new_session()
             # draw guidance
             self.calibration_ui.draw_guidance(self.config.cali_instruction)
-            # start calibration
+            self.camera.start_calibrating()
+            self.calibration_ui.draw(self._calibration_controller)
+            self.camera.stop_calibrating()
+
+            # Phase 2: Right tilt calibration
+            self.calibration_ui.draw_tilt_instruction('right')
+            self._calibration_controller.new_tilt_session('right')
+            self.camera.start_calibrating()
+            self.calibration_ui.draw(self._calibration_controller)
+            self.camera.stop_calibrating()
+
+            # Phase 3: Left tilt calibration
+            self.calibration_ui.draw_tilt_instruction('left')
+            self._calibration_controller.new_tilt_session('left')
             self.camera.start_calibrating()
             # draw calibration points
             self.calibration_ui.draw(self._calibration_controller)
+            self.camera.stop_calibrating()
+
+            # Fit model with all collected data from all 3 phases
+            self._calibration_controller._defer_model_fitting = False
+            self.camera.start_calibrating()
             user_response = self.calibration_ui.draw_cali_result(self._calibration_controller,
                                                                  self.config.model_fit_instruction)
             self.camera.stop_calibrating()
@@ -358,7 +378,7 @@ class GazeFollower:
                 face_info = self.face_alignment.detect(timestamp, frame)
                 gaze_info = self.gaze_estimator.detect(frame, face_info)
                 self._calibration_controller.add_cali_feature(gaze_info=gaze_info, face_info=face_info)
-            elif not self._calibration_controller.cali_model_fitted:
+            elif not self._calibration_controller.cali_model_fitted and not self._calibration_controller._defer_model_fitting:
                 features = np.array(self._calibration_controller.feature_vectors)
                 n_point, n_frame, feature_dim = features.shape
                 print("feature shape: ", features.shape)

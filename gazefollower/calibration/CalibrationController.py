@@ -21,6 +21,8 @@ class CalibrationController:
         self._five_cali_idx = [23, 1, 9, 37, 45, 23]
         self._thirteen_cali_idx = [23, 1, 5, 9, 12, 16, 19, 27, 30, 34, 37, 41, 45, 23]
         self._twenty_cali_idx = [23, 1, 3, 5, 7, 9, 12, 14, 16, 19, 21, 25, 27, 30, 32, 34, 37, 39, 41, 45, 23]
+        self._right_tilt_cali_idx = [9, 16, 27, 34, 45]
+        self._left_tilt_cali_idx = [1, 12, 19, 30, 37]
 
         self._six_vali_idx = [2, 8, 22, 24, 38, 44]
         self._eight_vali_idx = [2, 8, 13, 15, 31, 33, 38, 44]
@@ -49,9 +51,16 @@ class CalibrationController:
         self._each_point_onset_time = 0
         self.cali_model_fitted = False
         self.calibrating = False
+        self._tilt_phase_active = False
+        self._tilt_cali_idx = []
+        self._tilt_num_points = 5
+        self._tilt_feature_offset = 0
+        self._defer_model_fitting = False
 
     def update_position(self):
-        if self.cali_mode == CalibrationMode.NINE_POINT:
+        if self._tilt_phase_active:
+            position_idx = self._tilt_cali_idx[self._current_index]
+        elif self.cali_mode == CalibrationMode.NINE_POINT:
             position_idx = self._nine_cali_idx[self._current_index]
         elif self.cali_mode == CalibrationMode.FIVE_POINT:
             position_idx = self._five_cali_idx[self._current_index]
@@ -73,6 +82,8 @@ class CalibrationController:
         self._current_index = 0
         self.cali_model_fitted = False
         self.calibrating = True
+        self._tilt_phase_active = False
+        self._defer_model_fitting = True
         self.update_position()
         self._each_point_onset_time = time.time()
 
@@ -81,8 +92,37 @@ class CalibrationController:
             self.feature_vectors.append([])
             self.label_vectors.append([])
 
+    def new_tilt_session(self, side):
+        """Start a tilt calibration phase for the given side ('right' or 'left')."""
+        if side == 'right':
+            self._tilt_cali_idx = self._right_tilt_cali_idx
+        else:
+            self._tilt_cali_idx = self._left_tilt_cali_idx
+
+        self._tilt_phase_active = True
+        self._tilt_num_points = len(self._tilt_cali_idx)
+        self._tilt_feature_offset = len(self.feature_vectors)
+        self._n_frame_added = 0
+        self._current_index = 0
+        self.calibrating = True
+        self.cali_model_fitted = False
+
+        for _ in range(self._tilt_num_points):
+            self.feature_ids.append([])
+            self.feature_vectors.append([])
+            self.label_vectors.append([])
+
+        self.update_position()
+        self._each_point_onset_time = time.time()
+
     def add_cali_feature(self, gaze_info: GazeInfo, face_info: FaceInfo):
-        if self._current_index == self.cali_mode.value + 1:
+        # Determine stop condition based on phase
+        if self._tilt_phase_active:
+            stop_index = self._tilt_num_points
+        else:
+            stop_index = self.cali_mode.value + 1
+
+        if self._current_index == stop_index:
             Log.i("calibrating shutdowns")
             self.calibrating = False
             return
@@ -91,10 +131,20 @@ class CalibrationController:
             if gaze_info.status and (self._n_frame_added < self._n_frame_need_collect) and (
                     face_info.left_eye_openness > self.eye_blink_threshold) and (
                     face_info.right_eye_openness > self.eye_blink_threshold):
-                if self._current_index != 0 and self._n_frame_added < self._n_frame_need_collect:
-                    self.feature_vectors[self._current_index - 1].append(gaze_info.features)
-                    # self.label_vectors[self._current_index - 1].append(gaze_info.)
-                    self.feature_ids[self._current_index - 1].append([self._current_index - 1])
+
+                # Determine storage index
+                if self._tilt_phase_active:
+                    # Tilt mode: collect from index 0 (no warm-up skip)
+                    should_collect = self._n_frame_added < self._n_frame_need_collect
+                    store_idx = self._tilt_feature_offset + self._current_index
+                else:
+                    # Normal mode: skip index 0 (warm-up point)
+                    should_collect = self._current_index != 0 and self._n_frame_added < self._n_frame_need_collect
+                    store_idx = self._current_index - 1
+
+                if should_collect:
+                    self.feature_vectors[store_idx].append(gaze_info.features)
+                    self.feature_ids[store_idx].append([store_idx])
 
                     if self.physical_screen_size:
                         # has physical_screen_size
@@ -102,7 +152,7 @@ class CalibrationController:
                                           self.cam_pos, self.physical_screen_size, self.screen_size)
                     else:
                         added_pos = [self.x, self.y]
-                    self.label_vectors[self._current_index - 1].append(added_pos)
+                    self.label_vectors[store_idx].append(added_pos)
 
                 self._n_frame_added += 1
                 if self._n_frame_added == self._n_frame_need_collect:

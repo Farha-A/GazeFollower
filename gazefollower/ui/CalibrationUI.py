@@ -117,6 +117,55 @@ class CalibrationUI(BaseUI):
     def new_session(self):
         self.running = True
 
+    def draw_tilt_instruction(self, direction):
+        """Draw instruction to tilt head in the given direction with an arrow."""
+        self.running = True
+        instruction = f"Please tilt your head to the {direction}"
+        sub_text = "Press SPACE to continue"
+
+        while self.running:
+            self.backend.listen_event(self)
+            self.backend.before_draw()
+
+            sw, sh = self.backend.get_screen_size()
+
+            # Draw main instruction text
+            self.backend.draw_text(instruction, self.font_name, self.font_size, self._color_black,
+                                   (0, sh // 2 - 80, sw, 40), align='center')
+
+            # Draw arrow
+            arrow_y = sh // 2
+            arrow_length = 200
+            arrow_head_size = 30
+            cx = sw // 2
+
+            if direction == 'right':
+                x1 = cx - arrow_length // 2
+                x2 = cx + arrow_length // 2
+                # Shaft
+                self.backend.draw_line(x1, arrow_y, x2, arrow_y, self._color_black, 4)
+                # Arrowhead
+                self.backend.draw_line(x2, arrow_y, x2 - arrow_head_size, arrow_y - arrow_head_size,
+                                       self._color_black, 4)
+                self.backend.draw_line(x2, arrow_y, x2 - arrow_head_size, arrow_y + arrow_head_size,
+                                       self._color_black, 4)
+            else:
+                x1 = cx + arrow_length // 2
+                x2 = cx - arrow_length // 2
+                # Shaft
+                self.backend.draw_line(x1, arrow_y, x2, arrow_y, self._color_black, 4)
+                # Arrowhead
+                self.backend.draw_line(x2, arrow_y, x2 + arrow_head_size, arrow_y - arrow_head_size,
+                                       self._color_black, 4)
+                self.backend.draw_line(x2, arrow_y, x2 + arrow_head_size, arrow_y + arrow_head_size,
+                                       self._color_black, 4)
+
+            # Draw sub text
+            self.backend.draw_text(sub_text, self.font_name, self.row_font_size, self._color_gray,
+                                   (0, sh // 2 + 60, sw, 30), align='center')
+
+            self.backend.after_draw()
+
     def draw(self, cali_controller: CalibrationController):
         last_x, last_y = -1, -1
         while cali_controller.calibrating:
