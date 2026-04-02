@@ -25,19 +25,22 @@ def get_build_number():
 
 build_number = get_build_number()
 
-from gazefollower import version
+version_file = os.path.join(os.path.dirname(__file__), 'gazefollower', 'version.py')
+version_info = {}
+with open(version_file, 'r', encoding='utf-8') as f:
+    exec(f.read(), version_info)
 
-major_version, minor_version, patch_version = version.__version__.split(".")
+major_version, minor_version, patch_version = version_info['__version__'].split(".")
 
 setup(
     name=package_name,
     version=f"{major_version}.{minor_version}.{patch_version}",
-    author=version.__author__,
-    author_email=version.__email__,
-    description=version.__description__,
-    url=version.__url__,
+    author=version_info.get('__author__', ''),
+    author_email=version_info.get('__email__', ''),
+    description=version_info.get('__description__', ''),
+    url=version_info.get('__url__', ''),
     packages=find_packages(),
-    long_description=open('README.md').read(),  # 或者使用其他文档文件
+    long_description=open('README.md', encoding='utf-8').read(),  # 或者使用其他文档文件
     long_description_content_type='text/markdown',  # 如果使用 Markdown 格式
     package_data={
         package_name: ['res/audio/*', 'res/image/*', 'res/model_weights/base.mnn'],
