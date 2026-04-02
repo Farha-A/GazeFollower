@@ -120,7 +120,7 @@ class CalibrationUI(BaseUI):
     def draw_tilt_instruction(self, direction):
         """Draw instruction to tilt head in the given direction with an arrow."""
         self.running = True
-        instruction = f"Please tilt your head to the {direction}"
+        instruction = f"Please tilt your head slightly to the {direction}"
         sub_text = "Press SPACE to continue"
 
         while self.running:
