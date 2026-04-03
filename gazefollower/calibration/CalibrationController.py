@@ -61,6 +61,7 @@ class CalibrationController:
         self._defer_model_fitting = False
         self._break_interval = 22
         self._on_break = False
+        self._break_taken = False
 
     def update_position(self):
         if self._tilt_phase_active:
@@ -94,6 +95,7 @@ class CalibrationController:
         self._tilt_phase_active = False
         self._defer_model_fitting = True
         self._on_break = False
+        self._break_taken = False
         self.update_position()
         self._each_point_onset_time = time.time()
 
@@ -183,10 +185,11 @@ class CalibrationController:
                     self._each_point_onset_time = time.time()
 
                     # Check for break point (every _break_interval data points)
-                    if not self._tilt_phase_active and self._break_interval > 0 and self._current_index > 1:
+                    if not self._tilt_phase_active and self._break_interval > 0 and self._current_index > 1 and not self._break_taken:
                         data_points_collected = self._current_index - 1
                         if data_points_collected % self._break_interval == 0 and self._current_index < stop_index:
                             self._on_break = True
+                            self._break_taken = True
 
     def set_calibration_results(self, has_calibrated, mean_euclidean_error, labels, predictions):
         self.cali_available = has_calibrated
