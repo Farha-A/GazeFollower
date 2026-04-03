@@ -169,6 +169,12 @@ class CalibrationUI(BaseUI):
     def draw(self, cali_controller: CalibrationController):
         last_x, last_y = -1, -1
         while cali_controller.calibrating:
+            # Check for break point
+            if cali_controller._on_break:
+                self._draw_break_screen(cali_controller)
+                last_x, last_y = -1, -1
+                continue
+
             # listen event
             self.backend.listen_event(self, skip_event=True)
             # for pygame
@@ -187,3 +193,15 @@ class CalibrationUI(BaseUI):
                                    draw_rect)
             # flip the screen
             self.backend.after_draw()
+
+    def _draw_break_screen(self, cali_controller: CalibrationController):
+        """Show break message and wait for SPACE before resuming."""
+        self.running = True
+        break_text = ("Break point, please return to the same position as much as possible\n"
+                      "Press SPACE to continue")
+        while self.running:
+            self.backend.listen_event(self)
+            self.backend.before_draw()
+            self.backend.draw_text_on_screen_center(break_text, self.font_name, self.font_size)
+            self.backend.after_draw()
+        cali_controller.resume_from_break()

@@ -22,6 +22,7 @@ class CalibrationController:
         self._thirteen_cali_idx = [23, 1, 5, 9, 12, 16, 19, 27, 30, 34, 37, 41, 45, 23]
         self._seventeen_cali_idx = [23, 1, 3, 5, 9, 12, 14, 16, 19, 25, 27, 30, 32, 34, 37, 41, 45, 23]
         self._twentytwo_cali_idx = [23, 1, 3, 5, 7, 9, 10, 12, 16, 18, 19, 21, 25, 27, 28, 30, 34, 36, 37, 39, 41, 45, 23]
+        self._fortyfive_cali_idx = [23, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 23]
         self._right_tilt_cali_idx = [9, 16, 18, 27, 34, 36, 45]
         self._left_tilt_cali_idx = [1, 10, 12, 19, 28, 30, 37]
 
@@ -58,6 +59,8 @@ class CalibrationController:
         self._tilt_num_points = 5
         self._tilt_feature_offset = 0
         self._defer_model_fitting = False
+        self._break_interval = 22
+        self._on_break = False
 
     def update_position(self):
         if self._tilt_phase_active:
@@ -70,8 +73,10 @@ class CalibrationController:
             position_idx = self._thirteen_cali_idx[self._current_index]
         elif self.cali_mode == CalibrationMode.SEVENTEEN_POINT:
             position_idx = self._seventeen_cali_idx[self._current_index]
-        else:
+        elif self.cali_mode == CalibrationMode.TWENTY_TWO_POINT:
             position_idx = self._twentytwo_cali_idx[self._current_index]
+        else:
+            position_idx = self._fortyfive_cali_idx[self._current_index]
 
         percent_point = self.normalized_point[position_idx - 1]
         self.x = percent_point[0]
@@ -88,6 +93,7 @@ class CalibrationController:
         self.calibrating = True
         self._tilt_phase_active = False
         self._defer_model_fitting = True
+        self._on_break = False
         self.update_position()
         self._each_point_onset_time = time.time()
 
@@ -118,8 +124,16 @@ class CalibrationController:
 
         self.update_position()
         self._each_point_onset_time = time.time()
+        self._on_break = False
+
+    def resume_from_break(self):
+        """Resume calibration after a break point."""
+        self._on_break = False
+        self._each_point_onset_time = time.time()
 
     def add_cali_feature(self, gaze_info: GazeInfo, face_info: FaceInfo):
+        if self._on_break:
+            return
         # Determine stop condition based on phase
         if self._tilt_phase_active:
             stop_index = self._tilt_num_points
@@ -167,6 +181,12 @@ class CalibrationController:
                     self._current_index += 1
                     self._n_frame_added = 0
                     self._each_point_onset_time = time.time()
+
+                    # Check for break point (every _break_interval data points)
+                    if not self._tilt_phase_active and self._break_interval > 0 and self._current_index > 1:
+                        data_points_collected = self._current_index - 1
+                        if data_points_collected % self._break_interval == 0 and self._current_index < stop_index:
+                            self._on_break = True
 
     def set_calibration_results(self, has_calibrated, mean_euclidean_error, labels, predictions):
         self.cali_available = has_calibrated
