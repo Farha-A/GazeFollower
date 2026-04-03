@@ -25,6 +25,8 @@ class CalibrationController:
         self._fortyfive_cali_idx = [23, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 23]
         self._right_tilt_cali_idx = [9, 16, 18, 27, 34, 36, 45]
         self._left_tilt_cali_idx = [1, 10, 12, 19, 28, 30, 37]
+        self._up_tilt_cali_idx = [1, 5, 9, 12, 16]
+        self._down_tilt_cali_idx = [30, 34, 37, 41, 45]
 
         self._six_vali_idx = [2, 8, 22, 24, 38, 44]
         self._eight_vali_idx = [2, 8, 13, 15, 31, 33, 38, 44]
@@ -105,11 +107,15 @@ class CalibrationController:
             self.label_vectors.append([])
 
     def new_tilt_session(self, side):
-        """Start a tilt calibration phase for the given side ('right' or 'left')."""
+        """Start a tilt calibration phase for the given side ('right', 'left', 'up', or 'down')."""
         if side == 'right':
             self._tilt_cali_idx = self._right_tilt_cali_idx
-        else:
+        elif side == 'left':
             self._tilt_cali_idx = self._left_tilt_cali_idx
+        elif side == 'up':
+            self._tilt_cali_idx = self._up_tilt_cali_idx
+        else:
+            self._tilt_cali_idx = self._down_tilt_cali_idx
 
         self._tilt_phase_active = True
         self._tilt_num_points = len(self._tilt_cali_idx)

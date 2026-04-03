@@ -134,30 +134,50 @@ class CalibrationUI(BaseUI):
                                    (0, sh // 2 - 80, sw, 40), align='center')
 
             # Draw arrow
-            arrow_y = sh // 2
             arrow_length = 200
             arrow_head_size = 30
             cx = sw // 2
+            cy = sh // 2
 
             if direction == 'right':
                 x1 = cx - arrow_length // 2
                 x2 = cx + arrow_length // 2
                 # Shaft
-                self.backend.draw_line(x1, arrow_y, x2, arrow_y, self._color_black, 4)
+                self.backend.draw_line(x1, cy, x2, cy, self._color_black, 4)
                 # Arrowhead
-                self.backend.draw_line(x2, arrow_y, x2 - arrow_head_size, arrow_y - arrow_head_size,
+                self.backend.draw_line(x2, cy, x2 - arrow_head_size, cy - arrow_head_size,
                                        self._color_black, 4)
-                self.backend.draw_line(x2, arrow_y, x2 - arrow_head_size, arrow_y + arrow_head_size,
+                self.backend.draw_line(x2, cy, x2 - arrow_head_size, cy + arrow_head_size,
                                        self._color_black, 4)
-            else:
+            elif direction == 'left':
                 x1 = cx + arrow_length // 2
                 x2 = cx - arrow_length // 2
                 # Shaft
-                self.backend.draw_line(x1, arrow_y, x2, arrow_y, self._color_black, 4)
+                self.backend.draw_line(x1, cy, x2, cy, self._color_black, 4)
                 # Arrowhead
-                self.backend.draw_line(x2, arrow_y, x2 + arrow_head_size, arrow_y - arrow_head_size,
+                self.backend.draw_line(x2, cy, x2 + arrow_head_size, cy - arrow_head_size,
                                        self._color_black, 4)
-                self.backend.draw_line(x2, arrow_y, x2 + arrow_head_size, arrow_y + arrow_head_size,
+                self.backend.draw_line(x2, cy, x2 + arrow_head_size, cy + arrow_head_size,
+                                       self._color_black, 4)
+            elif direction == 'up':
+                y1 = cy + arrow_length // 2
+                y2 = cy - arrow_length // 2
+                # Shaft
+                self.backend.draw_line(cx, y1, cx, y2, self._color_black, 4)
+                # Arrowhead
+                self.backend.draw_line(cx, y2, cx - arrow_head_size, y2 + arrow_head_size,
+                                       self._color_black, 4)
+                self.backend.draw_line(cx, y2, cx + arrow_head_size, y2 + arrow_head_size,
+                                       self._color_black, 4)
+            else:  # down
+                y1 = cy - arrow_length // 2
+                y2 = cy + arrow_length // 2
+                # Shaft
+                self.backend.draw_line(cx, y1, cx, y2, self._color_black, 4)
+                # Arrowhead
+                self.backend.draw_line(cx, y2, cx - arrow_head_size, y2 - arrow_head_size,
+                                       self._color_black, 4)
+                self.backend.draw_line(cx, y2, cx + arrow_head_size, y2 - arrow_head_size,
                                        self._color_black, 4)
 
             # Draw sub text

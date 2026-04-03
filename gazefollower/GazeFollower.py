@@ -246,6 +246,21 @@ class GazeFollower:
                 self.calibration_ui.draw(self._calibration_controller)
                 self.camera.stop_calibrating()
 
+                if self.config.tilt_calibration_vertical:
+                    # Phase 4: Up tilt calibration
+                    self.calibration_ui.draw_tilt_instruction('up')
+                    self._calibration_controller.new_tilt_session('up')
+                    self.camera.start_calibrating()
+                    self.calibration_ui.draw(self._calibration_controller)
+                    self.camera.stop_calibrating()
+
+                    # Phase 5: Down tilt calibration
+                    self.calibration_ui.draw_tilt_instruction('down')
+                    self._calibration_controller.new_tilt_session('down')
+                    self.camera.start_calibrating()
+                    self.calibration_ui.draw(self._calibration_controller)
+                    self.camera.stop_calibrating()
+
                 # Allow model fitting after all phases
                 self._calibration_controller._defer_model_fitting = False
 

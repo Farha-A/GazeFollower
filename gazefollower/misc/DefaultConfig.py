@@ -54,6 +54,7 @@ class DefaultConfig:
         self.screen_physical_size = None
         self.cali_instruction = "Please look at the dot.\nPress `SPACE` to continue."
         self.tilt_calibration = True
+        self.tilt_calibration_vertical = True
 
     @property
     def cali_mode(self):
