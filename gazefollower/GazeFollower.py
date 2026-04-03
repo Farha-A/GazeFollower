@@ -221,6 +221,8 @@ class GazeFollower:
             # Phase 1: Initial calibration
             self._new_calibration_session()
             self._calibration_controller.new_session()
+            if not self.config.tilt_calibration:
+                self._calibration_controller._defer_model_fitting = False
             self.calibration_ui.new_session()
             # draw guidance
             self.calibration_ui.draw_guidance(self.config.cali_instruction)
@@ -228,23 +230,26 @@ class GazeFollower:
             self.calibration_ui.draw(self._calibration_controller)
             self.camera.stop_calibrating()
 
-            # Phase 2: Right tilt calibration
-            self.calibration_ui.draw_tilt_instruction('right')
-            self._calibration_controller.new_tilt_session('right')
-            self.camera.start_calibrating()
-            self.calibration_ui.draw(self._calibration_controller)
-            self.camera.stop_calibrating()
+            if self.config.tilt_calibration:
+                # Phase 2: Right tilt calibration
+                self.calibration_ui.draw_tilt_instruction('right')
+                self._calibration_controller.new_tilt_session('right')
+                self.camera.start_calibrating()
+                self.calibration_ui.draw(self._calibration_controller)
+                self.camera.stop_calibrating()
 
-            # Phase 3: Left tilt calibration
-            self.calibration_ui.draw_tilt_instruction('left')
-            self._calibration_controller.new_tilt_session('left')
-            self.camera.start_calibrating()
-            # draw calibration points
-            self.calibration_ui.draw(self._calibration_controller)
-            self.camera.stop_calibrating()
+                # Phase 3: Left tilt calibration
+                self.calibration_ui.draw_tilt_instruction('left')
+                self._calibration_controller.new_tilt_session('left')
+                self.camera.start_calibrating()
+                # draw calibration points
+                self.calibration_ui.draw(self._calibration_controller)
+                self.camera.stop_calibrating()
 
-            # Fit model with all collected data from all 3 phases
-            self._calibration_controller._defer_model_fitting = False
+                # Allow model fitting after all phases
+                self._calibration_controller._defer_model_fitting = False
+
+            # Fit model and show results
             self.camera.start_calibrating()
             user_response = self.calibration_ui.draw_cali_result(self._calibration_controller,
                                                                  self.config.model_fit_instruction)

@@ -51,6 +51,7 @@ class DefaultConfig:
         self.camera_position: Tuple = (17.15, -0.68)
         self.screen_physical_size = None
         self.cali_instruction = "Please look at the dot.\nPress `SPACE` to continue."
+        self.tilt_calibration = True
 
     @property
     def cali_mode(self):
