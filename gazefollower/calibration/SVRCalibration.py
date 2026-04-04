@@ -35,8 +35,8 @@ class SVRCalibration(Calibration):
         self.svr_y = cv.ml.SVM.create()  # SVM model for the y coordinate
 
         if self.svr_y_path.exists() and self.svr_x_path.exists():
-            self.svr_x.load(str(self.svr_x_path))
-            self.svr_y.load(str(self.svr_y_path))
+            self.svr_x = cv.ml.SVM.load(str(self.svr_x_path))
+            self.svr_y = cv.ml.SVM.load(str(self.svr_y_path))
             self.has_calibrated = True
         else:
             # Set default parameters for the SVM models
