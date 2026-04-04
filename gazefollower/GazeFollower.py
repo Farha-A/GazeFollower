@@ -231,35 +231,39 @@ class GazeFollower:
             self.camera.stop_calibrating()
 
             if self.config.tilt_calibration:
+                # Keep camera in calibrating state throughout all tilt phases
+                # (controller's _defer_model_fitting prevents premature fitting)
+                self.camera.start_calibrating()
+
                 # Phase 2: Right tilt calibration
                 self.calibration_ui.draw_tilt_instruction('right')
                 self._calibration_controller.new_tilt_session('right')
-                self.camera.start_calibrating()
                 self.calibration_ui.draw(self._calibration_controller)
-                self.camera.stop_calibrating()
 
                 # Phase 3: Left tilt calibration
                 self.calibration_ui.draw_tilt_instruction('left')
                 self._calibration_controller.new_tilt_session('left')
-                self.camera.start_calibrating()
-                # draw calibration points
                 self.calibration_ui.draw(self._calibration_controller)
-                self.camera.stop_calibrating()
 
                 if self.config.tilt_calibration_vertical:
                     # Phase 4: Up tilt calibration
                     self.calibration_ui.draw_tilt_instruction('up')
                     self._calibration_controller.new_tilt_session('up')
-                    self.camera.start_calibrating()
                     self.calibration_ui.draw(self._calibration_controller)
-                    self.camera.stop_calibrating()
 
                     # Phase 5: Down tilt calibration
                     self.calibration_ui.draw_tilt_instruction('down')
                     self._calibration_controller.new_tilt_session('down')
-                    self.camera.start_calibrating()
                     self.calibration_ui.draw(self._calibration_controller)
-                    self.camera.stop_calibrating()
+
+                if self.config.recalibration_normal:
+                    # Phase 6: Normal head re-calibration (5 points)
+                    self.calibration_ui.draw_guidance(
+                        "Please return your head to the normal position.\nPress SPACE to continue.")
+                    self._calibration_controller.new_tilt_session('normal')
+                    self.calibration_ui.draw(self._calibration_controller)
+
+                self.camera.stop_calibrating()
 
                 # Allow model fitting after all phases
                 self._calibration_controller._defer_model_fitting = False

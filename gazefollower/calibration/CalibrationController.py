@@ -25,8 +25,9 @@ class CalibrationController:
         self._fortyfive_cali_idx = [23, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 23]
         self._right_tilt_cali_idx = [9, 16, 18, 27, 34, 36, 45]
         self._left_tilt_cali_idx = [1, 10, 12, 19, 28, 30, 37]
-        self._up_tilt_cali_idx = [1, 5, 9, 12, 16]
-        self._down_tilt_cali_idx = [30, 34, 37, 41, 45]
+        self._up_tilt_cali_idx = [1, 5, 9, 10, 12, 16, 18]
+        self._down_tilt_cali_idx = [28, 30, 34, 36, 37, 41, 45]
+        self._normal_recali_cali_idx = [1, 9, 23, 37, 45]
 
         self._six_vali_idx = [2, 8, 22, 24, 38, 44]
         self._eight_vali_idx = [2, 8, 13, 15, 31, 33, 38, 44]
@@ -98,6 +99,7 @@ class CalibrationController:
         self._defer_model_fitting = True
         self._on_break = False
         self._break_taken = False
+        self._prepare_time = 1.5  # restore normal prepare time
         self.update_position()
         self._each_point_onset_time = time.time()
 
@@ -114,8 +116,10 @@ class CalibrationController:
             self._tilt_cali_idx = self._left_tilt_cali_idx
         elif side == 'up':
             self._tilt_cali_idx = self._up_tilt_cali_idx
-        else:
+        elif side == 'down':
             self._tilt_cali_idx = self._down_tilt_cali_idx
+        else:
+            self._tilt_cali_idx = self._normal_recali_cali_idx
 
         self._tilt_phase_active = True
         self._tilt_num_points = len(self._tilt_cali_idx)
@@ -124,6 +128,7 @@ class CalibrationController:
         self._current_index = 0
         self.calibrating = True
         self.cali_model_fitted = False
+        self._prepare_time = 1.0  # shorter prepare time for tilt phases
 
         for _ in range(self._tilt_num_points):
             self.feature_ids.append([])
