@@ -82,6 +82,8 @@ class GazeFollower:
                                                                                     self.screen_size,
                                                                                     config.screen_physical_size,
                                                                                     self.config.eye_blink_threshold)
+        if getattr(self.config, 'split_calibration_background', False):
+            self._calibration_controller.enable_split_background()
 
         self._gaze_info = None
 

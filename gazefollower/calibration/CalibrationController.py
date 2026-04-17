@@ -65,6 +65,27 @@ class CalibrationController:
         self._break_interval = 22
         self._on_break = False
         self._break_taken = False
+        self._split_background = False
+
+    def enable_split_background(self):
+        self._split_background = True
+        for attr in ['_nine_cali_idx', '_five_cali_idx', '_thirteen_cali_idx', '_seventeen_cali_idx', '_twentytwo_cali_idx', '_fortyfive_cali_idx']:
+            arr = getattr(self, attr)
+            warmup = [arr[0]]
+            end_warmup = [arr[-1]]
+            points = arr[1:-1]
+            odds = points[0::2]
+            evens = points[1::2]
+            setattr(self, attr, warmup + odds + evens + end_warmup)
+
+    @property
+    def is_second_half(self):
+        if self._tilt_phase_active:
+             mid = (self._tilt_num_points + 1) // 2
+             return self._current_index >= mid
+        total = self.cali_mode.value
+        mid = (total + 1) // 2
+        return (self._current_index - 1) >= mid
 
     def update_position(self):
         if self._tilt_phase_active:

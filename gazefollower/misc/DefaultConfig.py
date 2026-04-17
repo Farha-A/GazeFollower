@@ -56,6 +56,7 @@ class DefaultConfig:
         self.tilt_calibration = True
         self.tilt_calibration_vertical = True
         self.recalibration_normal = True
+        self.split_calibration_background = False
 
     @property
     def cali_mode(self):

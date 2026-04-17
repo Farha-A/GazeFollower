@@ -198,6 +198,16 @@ class CalibrationUI(BaseUI):
             # listen event
             self.backend.listen_event(self, skip_event=True)
             # for pygame
+            is_black_bg = False
+            if getattr(self.config, 'split_calibration_background', False):
+                if cali_controller.is_second_half:
+                    if hasattr(self.backend, 'bg_color'):
+                        self.backend.bg_color = (0, 0, 0)
+                        is_black_bg = True
+                else:
+                    if hasattr(self.backend, 'bg_color'):
+                        self.backend.bg_color = (255, 255, 255)
+
             self.backend.before_draw()
             # draw dot
             cali_img_size = self.config.cali_target_size
@@ -208,8 +218,15 @@ class CalibrationUI(BaseUI):
             if target_x != last_x or target_y != last_y:
                 self.backend.play_sound(self._sound_id)
                 last_x, last_y = target_x, target_y
-            self.backend.draw_image(self.config.cali_target_img, draw_rect)
-            self.backend.draw_text(str(cali_controller.progress), self.font_name, self.row_font_size, self._color_white,
+
+            if is_black_bg:
+                self.backend.draw_circle(target_x, target_y, cali_img_size[0] // 2, self._color_white)
+                text_color = self._color_black
+            else:
+                self.backend.draw_image(self.config.cali_target_img, draw_rect)
+                text_color = self._color_white
+
+            self.backend.draw_text(str(cali_controller.progress), self.font_name, self.row_font_size, text_color,
                                    draw_rect)
             # flip the screen
             self.backend.after_draw()
