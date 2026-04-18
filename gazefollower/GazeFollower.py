@@ -218,7 +218,7 @@ class GazeFollower:
         else:
             backend_name = self.backend_name(win)
 
-        self.calibration_ui = CalibrationUI(win=win, backend_name=backend_name)
+        self.calibration_ui = CalibrationUI(win=win, backend_name=backend_name, config=self.config)
         while 1:
             # Phase 1: Initial calibration
             self._new_calibration_session()
