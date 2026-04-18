@@ -70,19 +70,16 @@ class CalibrationController:
     def enable_split_background(self):
         self._split_background = True
         for attr in ['_nine_cali_idx', '_five_cali_idx', '_thirteen_cali_idx', '_seventeen_cali_idx', '_twentytwo_cali_idx', '_fortyfive_cali_idx']:
-            arr = getattr(self, attr)
-            warmup = [arr[0]]
-            end_warmup = [arr[-1]]
-            points = arr[1:-1]
-            odds = points[0::2]
-            evens = points[1::2]
-            setattr(self, attr, warmup + odds + evens + end_warmup)
+            original = list(getattr(self, attr))
+            setattr(self, attr, original + original)
 
     @property
     def is_second_half(self):
         if self._tilt_phase_active:
              mid = (self._tilt_num_points + 1) // 2
              return self._current_index >= mid
+        if self._split_background:
+             return self._current_index > self.cali_mode.value
         total = self.cali_mode.value
         mid = (total + 1) // 2
         return (self._current_index - 1) >= mid
@@ -121,6 +118,8 @@ class CalibrationController:
         self._on_break = False
         self._break_taken = False
         self._prepare_time = 1.5  # restore normal prepare time
+        if self._split_background:
+            self._break_interval = self.cali_mode.value
         self.update_position()
         self._each_point_onset_time = time.time()
 
@@ -173,6 +172,8 @@ class CalibrationController:
             stop_index = self._tilt_num_points
         else:
             stop_index = self.cali_mode.value + 1
+            if self._split_background:
+                stop_index = 2 * (self.cali_mode.value + 1)
 
         if self._current_index == stop_index:
             Log.i("calibrating shutdowns")
@@ -190,9 +191,15 @@ class CalibrationController:
                     should_collect = self._n_frame_added < self._n_frame_need_collect
                     store_idx = self._tilt_feature_offset + self._current_index
                 else:
-                    # Normal mode: skip index 0 (warm-up point)
-                    should_collect = self._current_index != 0 and self._n_frame_added < self._n_frame_need_collect
-                    store_idx = self._current_index - 1
+                    # Normal mode: skip warm-up points (index 0, and second warm-up in split mode)
+                    is_warmup = self._current_index == 0
+                    if self._split_background and self._current_index == self.cali_mode.value + 1:
+                        is_warmup = True
+                    should_collect = not is_warmup and self._n_frame_added < self._n_frame_need_collect
+                    if self._split_background and self._current_index > self.cali_mode.value + 1:
+                        store_idx = self._current_index - self.cali_mode.value - 2
+                    else:
+                        store_idx = self._current_index - 1
 
                 if should_collect:
                     self.feature_vectors[store_idx].append(gaze_info.features)

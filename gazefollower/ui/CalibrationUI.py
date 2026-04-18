@@ -2,6 +2,7 @@
 # Author: GC Zhu
 # Email: zhugc2016@gmail.com
 
+import cv2
 import numpy as np
 
 from gazefollower.calibration import CalibrationController
@@ -23,6 +24,11 @@ class CalibrationUI(BaseUI):
 
         self._sound_id = "beep"
         self.backend.load_sound(self.config.cali_target_sound, self._sound_id)
+
+        # Create colour-inverted calibration target for black background
+        _img = cv2.imread(self.config.cali_target_img)
+        _img_rgb = cv2.cvtColor(_img, cv2.COLOR_BGR2RGB)
+        self._inverted_cali_img = (255 - _img_rgb).astype(np.uint8)
 
         self.target_position: tuple = (960, 540)
         self.target_progress: int = 0
@@ -220,12 +226,13 @@ class CalibrationUI(BaseUI):
                 last_x, last_y = target_x, target_y
 
             if is_black_bg:
-                self.backend.draw_circle(target_x, target_y, cali_img_size[0] // 2, self._color_white)
-                text_color = self._color_black
+                self.backend.draw_image(self._inverted_cali_img, draw_rect)
             else:
                 self.backend.draw_image(self.config.cali_target_img, draw_rect)
-                text_color = self._color_white
 
+            # On white bg: white text visible on black center of dot
+            # On black bg: black text visible on white center of inverted dot
+            text_color = self._color_black if is_black_bg else self._color_white
             self.backend.draw_text(str(cali_controller.progress), self.font_name, self.row_font_size, text_color,
                                    draw_rect)
             # flip the screen

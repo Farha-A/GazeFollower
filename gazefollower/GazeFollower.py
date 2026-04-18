@@ -487,12 +487,15 @@ class GazeFollower:
         right_eye_openness,tracking_status,status,event,trigger\n
         """
 
-        ret_str = (f"{gaze_info.timestamp},{gaze_info.raw_gaze_coordinates[0]},{gaze_info.raw_gaze_coordinates[1]},"
-                   f"{gaze_info.calibrated_gaze_coordinates[0]},{gaze_info.calibrated_gaze_coordinates[1]},"
-                   f"{gaze_info.filtered_gaze_coordinates[0]},{gaze_info.filtered_gaze_coordinates[1]},"
-                   f"{gaze_info.left_openness},{gaze_info.right_openness},{gaze_info.tracking_state.value},"
-                   f"{int(gaze_info.status)},{int(gaze_info.event.value)},{trigger}\n")
-        return ret_str
+        try:
+            ret_str = (f"{gaze_info.timestamp},{gaze_info.raw_gaze_coordinates[0]},{gaze_info.raw_gaze_coordinates[1]},"
+                       f"{gaze_info.calibrated_gaze_coordinates[0]},{gaze_info.calibrated_gaze_coordinates[1]},"
+                       f"{gaze_info.filtered_gaze_coordinates[0]},{gaze_info.filtered_gaze_coordinates[1]},"
+                       f"{gaze_info.left_openness},{gaze_info.right_openness},{gaze_info.tracking_state.value},"
+                       f"{int(gaze_info.status)},{int(gaze_info.event.value)},{trigger}\n")
+            return ret_str
+        except TypeError:
+            return ""
 
     def _write_sample(self, face_info, gaze_info):
         """
