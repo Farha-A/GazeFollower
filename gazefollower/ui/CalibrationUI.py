@@ -231,6 +231,10 @@ class CalibrationUI(BaseUI):
             # flip the screen
             self.backend.after_draw()
 
+        # Reset the background color to white after calibration is finished
+        if hasattr(self.backend, 'bg_color'):
+            self.backend.bg_color = (255, 255, 255)
+
     def _draw_break_screen(self, cali_controller: CalibrationController):
         """Show break message and wait for SPACE before resuming."""
         self.running = True
