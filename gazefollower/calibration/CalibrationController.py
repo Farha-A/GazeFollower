@@ -76,8 +76,8 @@ class CalibrationController:
     @property
     def is_second_half(self):
         if self._tilt_phase_active:
-             mid = (self._tilt_num_points + 1) // 2
-             return self._current_index >= mid
+             # Tilt / recalibration phases always use white background
+             return False
         if self._split_background:
              return self._current_index > self.cali_mode.value
         total = self.cali_mode.value

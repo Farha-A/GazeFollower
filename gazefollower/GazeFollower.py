@@ -405,18 +405,23 @@ class GazeFollower:
                 gaze_info = self.gaze_estimator.detect(frame, face_info)
                 self._calibration_controller.add_cali_feature(gaze_info=gaze_info, face_info=face_info)
             elif not self._calibration_controller.cali_model_fitted and not self._calibration_controller._defer_model_fitting:
-                features = np.array(self._calibration_controller.feature_vectors)
-                n_point, n_frame, feature_dim = features.shape
+                # Filter out empty calibration point buckets and concatenate
+                # the remaining data.  Sub-lists can have different frame
+                # counts when face/eye detection fails intermittently, so a
+                # simple np.array() would produce a ragged (inhomogeneous)
+                # array and raise a ValueError.
+                raw_features = self._calibration_controller.feature_vectors
+                raw_labels = self._calibration_controller.label_vectors
+                raw_ids = self._calibration_controller.feature_ids
+
+                feat_arrays = [np.array(f) for f in raw_features if len(f) > 0]
+                label_arrays = [np.array(l) for l in raw_labels if len(l) > 0]
+                id_arrays = [np.array(i) for i in raw_ids if len(i) > 0]
+
+                features = np.concatenate(feat_arrays, axis=0)
+                labels = np.concatenate(label_arrays, axis=0)
+                point_ids = np.concatenate(id_arrays, axis=0)
                 print("feature shape: ", features.shape)
-
-                features = np.reshape(features, (n_point * n_frame, feature_dim))
-
-                labels = np.array(self._calibration_controller.label_vectors)
-                n_point, n_frame, label_dim = labels.shape
-                labels = np.reshape(labels, (n_point * n_frame, label_dim))
-                ids = np.array(self._calibration_controller.feature_ids)
-                n_point, n_frame, ids_dim = ids.shape
-                point_ids = np.reshape(ids, (n_point * n_frame, ids_dim))
 
                 # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 # features_path = f"features_{timestamp}.npz"
