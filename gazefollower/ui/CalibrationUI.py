@@ -73,17 +73,16 @@ class CalibrationUI(BaseUI):
         uni_p, avg_labels, avg_predictions = [], [], []
         if cali_controller.predictions is not None:
             text += "\nRed dot: ground truth point, Green dot: predicted point"
-            ids = np.array(cali_controller.feature_ids)
-            n_point, n_frame, ids_dim = ids.shape
-            point_ids = ids.reshape(-1)
+            # Filter out empty buckets and concatenate (sub-lists may
+            # have different frame counts after tilt calibration).
+            id_arrays = [np.array(i) for i in cali_controller.feature_ids if len(i) > 0]
+            point_ids = np.concatenate(id_arrays, axis=0).reshape(-1)
 
-            labels = np.array(cali_controller.label_vectors)
-            n_point_label, n_frame_label, label_dim = labels.shape
-            labels_flat = labels.reshape(-1, label_dim)
+            label_arrays = [np.array(l) for l in cali_controller.label_vectors if len(l) > 0]
+            labels_flat = np.concatenate(label_arrays, axis=0)
+            label_dim = labels_flat.shape[1]
 
             predictions_flat = np.array(cali_controller.predictions)
-            if predictions_flat.shape != (n_point * n_frame, 2):
-                raise ValueError("Predictions shape does not match feature_ids")
 
             uni_p = np.unique(point_ids)
             avg_labels = np.zeros((len(uni_p), label_dim))
