@@ -95,7 +95,7 @@ class MediaPipeFaceAlignment(FaceAlignment):
                 face_landmarks[i].y = np.round(face_landmarks[i].y * image_height)
                 face_landmarks[i].z = np.round(face_landmarks[i].z * image_width)
                 _face_mesh.append([face_landmarks[i].x, face_landmarks[i].y, face_landmarks[i].z])
-            _face_mesh = np.array(_face_mesh, dtype=np.int16)
+            _face_mesh = np.array(_face_mesh, dtype=np.int32)
             # print(_face_mesh.shape)
             # face_landmarks to numpy array
             # np.savez_compressed(face_mesh_npz_path, face_mesh=_face_mesh)

@@ -29,3 +29,4 @@ gazefollower/ui/__pycache__
 .gitignore
 token
 gazefollower/res/model_weights/base.mnn
+/.venv
