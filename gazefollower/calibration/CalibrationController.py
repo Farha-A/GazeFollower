@@ -46,7 +46,7 @@ class CalibrationController:
 
         self._prepare_time = 1.5  # time for waiting subject look at the dot
         self._wait_time = 0.5
-        self._n_frame_need_collect = 45
+        self._n_frame_need_collect = 23
 
         self.feature_ids = []
         self.feature_vectors = []
