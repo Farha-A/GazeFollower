@@ -223,7 +223,7 @@ class GazeFollower:
             # Phase 1: Initial calibration
             self._new_calibration_session()
             self._calibration_controller.new_session()
-            if not self.config.tilt_calibration:
+            if not (self.config.tilt_calibration or getattr(self.config, 'tilt_calibration_vertical', False) or getattr(self.config, 'recalibration_normal', False)):
                 self._calibration_controller._defer_model_fitting = False
             self.calibration_ui.new_session()
             # draw guidance
@@ -232,22 +232,26 @@ class GazeFollower:
             self.calibration_ui.draw(self._calibration_controller)
             self.camera.stop_calibrating()
 
-            if self.config.tilt_calibration:
+            any_extra_calibration = (self.config.tilt_calibration or 
+                                     getattr(self.config, 'tilt_calibration_vertical', False) or 
+                                     getattr(self.config, 'recalibration_normal', False))
+            if any_extra_calibration:
                 # Keep camera in calibrating state throughout all tilt phases
                 # (controller's _defer_model_fitting prevents premature fitting)
                 self.camera.start_calibrating()
 
-                # Phase 2: Right tilt calibration
-                self.calibration_ui.draw_tilt_instruction('right')
-                self._calibration_controller.new_tilt_session('right')
-                self.calibration_ui.draw(self._calibration_controller)
+                if self.config.tilt_calibration:
+                    # Phase 2: Right tilt calibration
+                    self.calibration_ui.draw_tilt_instruction('right')
+                    self._calibration_controller.new_tilt_session('right')
+                    self.calibration_ui.draw(self._calibration_controller)
 
-                # Phase 3: Left tilt calibration
-                self.calibration_ui.draw_tilt_instruction('left')
-                self._calibration_controller.new_tilt_session('left')
-                self.calibration_ui.draw(self._calibration_controller)
+                    # Phase 3: Left tilt calibration
+                    self.calibration_ui.draw_tilt_instruction('left')
+                    self._calibration_controller.new_tilt_session('left')
+                    self.calibration_ui.draw(self._calibration_controller)
 
-                if self.config.tilt_calibration_vertical:
+                if getattr(self.config, 'tilt_calibration_vertical', False):
                     # Phase 4: Up tilt calibration
                     self.calibration_ui.draw_tilt_instruction('up')
                     self._calibration_controller.new_tilt_session('up')
@@ -258,7 +262,7 @@ class GazeFollower:
                     self._calibration_controller.new_tilt_session('down')
                     self.calibration_ui.draw(self._calibration_controller)
 
-                if self.config.recalibration_normal:
+                if getattr(self.config, 'recalibration_normal', False):
                     # Phase 6: Normal head re-calibration (5 points)
                     self.calibration_ui.draw_guidance(
                         "Please return your head to the normal position.\nPress SPACE to continue.")

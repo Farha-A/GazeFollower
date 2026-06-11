@@ -54,7 +54,7 @@ class SVRCalibration(Calibration):
         svr.setKernel(cv.ml.SVM_RBF)
         svr.setC(1.0)  # Example C value, adjust as needed
         svr.setGamma(0.005)  # Example gamma value, adjust as needed
-        svr.setP(0.2)  # Epsilon for loss function
+        svr.setP(0.1)  # Epsilon for loss function
         term_criteria = (cv.TERM_CRITERIA_MAX_ITER, 10000, 1e-4)
         svr.setTermCriteria(term_criteria)
 
