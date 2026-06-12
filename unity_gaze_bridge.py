@@ -96,53 +96,56 @@ def check_has_saved_calibration(profile_id=None):
 # 23-point normal sequence derived from GazeFollower's cali_idx applied to
 # generate_points() — 5x9 grid with 50px margins on a 1920x1080 screen.
 # Indices (1-based): 23,1,3,5,7,9,10,12,16,18,19,21,25,27,28,30,34,36,37,39,41,45,23
-CALIBRATION_POINTS_23 = [
-    (0.500, 0.500),  # 23 center (start)
-    (0.026, 0.046),  #  1 top-left
-    (0.263, 0.046),  #  3 top-inner-left
-    (0.500, 0.046),  #  5 top-center
-    (0.737, 0.046),  #  7 top-inner-right
-    (0.974, 0.046),  #  9 top-right
-    (0.026, 0.273),  # 10 row 2 left
-    (0.263, 0.273),  # 12 row 2 inner-left
-    (0.737, 0.273),  # 16 row 2 inner-right
-    (0.974, 0.273),  # 18 row 2 right
-    (0.026, 0.500),  # 19 mid-left
-    (0.263, 0.500),  # 21 mid-inner-left
-    (0.737, 0.500),  # 25 mid-inner-right
-    (0.974, 0.500),  # 27 mid-right
-    (0.026, 0.727),  # 28 row 4 left
-    (0.263, 0.727),  # 30 row 4 inner-left
-    (0.737, 0.727),  # 34 row 4 inner-right
-    (0.974, 0.727),  # 36 row 4 right
-    (0.026, 0.954),  # 37 bottom-left
-    (0.263, 0.954),  # 39 bottom-inner-left
-    (0.500, 0.954),  # 41 bottom-center
-    (0.974, 0.954),  # 45 bottom-right
-    (0.500, 0.500),  # 23 center (end)
-]
-
-CALIBRATION_POINTS_RIGHT_TILT = [
-    (0.974, 0.046),  #  9
-    (0.737, 0.273),  # 16
-    (0.974, 0.273),  # 18
-    (0.974, 0.500),  # 27
-    (0.737, 0.727),  # 34
-    (0.974, 0.727),  # 36
-    (0.974, 0.954),  # 45
-]
-
-CALIBRATION_POINTS_LEFT_TILT = [
-    (0.026, 0.046),  #  1
+CALIBRATION_POINTS_45 = [
+    (0.500, 0.500),  # 23
+    (0.026, 0.046),  # 1
+    (0.145, 0.046),  # 2
+    (0.263, 0.046),  # 3
+    (0.382, 0.046),  # 4
+    (0.500, 0.046),  # 5
+    (0.618, 0.046),  # 6
+    (0.737, 0.046),  # 7
+    (0.855, 0.046),  # 8
+    (0.974, 0.046),  # 9
     (0.026, 0.273),  # 10
+    (0.145, 0.273),  # 11
     (0.263, 0.273),  # 12
+    (0.382, 0.273),  # 13
+    (0.500, 0.273),  # 14
+    (0.618, 0.273),  # 15
+    (0.737, 0.273),  # 16
+    (0.855, 0.273),  # 17
+    (0.974, 0.273),  # 18
     (0.026, 0.500),  # 19
+    (0.145, 0.500),  # 20
+    (0.263, 0.500),  # 21
+    (0.382, 0.500),  # 22
+    (0.618, 0.500),  # 24
+    (0.737, 0.500),  # 25
+    (0.855, 0.500),  # 26
+    (0.974, 0.500),  # 27
     (0.026, 0.727),  # 28
+    (0.145, 0.727),  # 29
     (0.263, 0.727),  # 30
+    (0.382, 0.727),  # 31
+    (0.500, 0.727),  # 32
+    (0.618, 0.727),  # 33
+    (0.737, 0.727),  # 34
+    (0.855, 0.727),  # 35
+    (0.974, 0.727),  # 36
     (0.026, 0.954),  # 37
+    (0.145, 0.954),  # 38
+    (0.263, 0.954),  # 39
+    (0.382, 0.954),  # 40
+    (0.500, 0.954),  # 41
+    (0.618, 0.954),  # 42
+    (0.737, 0.954),  # 43
+    (0.855, 0.954),  # 44
+    (0.974, 0.954),  # 45
+    (0.500, 0.500),  # 23
 ]
 
-FRAMES_PER_POINT = 45
+FRAMES_PER_POINT = 23
 PREPARE_TIME = 1.5  # seconds the user fixates before data collection starts
 
 
@@ -206,10 +209,7 @@ def run_unity_calibration(gf, udp_socket, target_port):
     # tilt_pause gives Unity time to show the glow animation before dots start.
     TILT_PAUSE = 4.0
     phases = [
-        ("PHASE_LIGHT",      CALIBRATION_POINTS_23,         0.0),
-        ("PHASE_DARK",       CALIBRATION_POINTS_23,         0.0),
-        ("PHASE_RIGHT_TILT", CALIBRATION_POINTS_RIGHT_TILT, TILT_PAUSE),
-        ("PHASE_LEFT_TILT",  CALIBRATION_POINTS_LEFT_TILT,  TILT_PAUSE),
+        ("PHASE_LIGHT",      CALIBRATION_POINTS_45,         0.0),
     ]
 
     total_points = sum(len(pts) for _, pts, _ in phases)
