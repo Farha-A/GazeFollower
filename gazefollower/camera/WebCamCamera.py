@@ -18,7 +18,8 @@ class WebCamCamera(Camera):
     A class to manage webcam operations, inheriting from the base Camera class.
     """
 
-    def __init__(self, webcam_id=0, img_height=480, img_width=640, cam_fps=30):
+    def __init__(self, webcam_id=0, img_height=480, img_width=640, cam_fps=30,
+                 use_clahe=True, clahe_clip_limit=2.0, clahe_tile_grid_size=(8, 8)):
         """
         Initializes the WebCamCamera object, sets up the camera properties,
         creates the capture thread, and ensures the save directory exists.
@@ -29,6 +30,17 @@ class WebCamCamera(Camera):
             Which webcam camera is connected.
         cap: cv2.VideoCapture
             The instance of cv2.VideoCapture and it can be None.
+        use_clahe : bool
+            Apply CLAHE (Contrast Limited Adaptive Histogram Equalization) to
+            the luminance channel of every captured frame before passing it to
+            GazeFollower.  Enhances local contrast so iris/pupil boundaries
+            stand out without amplifying global noise or shifting colour.
+            Defaults to True.
+        clahe_clip_limit : float
+            Contrast amplification ceiling per tile.  Lower = subtler effect.
+        clahe_tile_grid_size : tuple(int, int)
+            Neighbourhood size for local histogram computation. (8, 8) is the
+            standard default.
         """
         super().__init__()
         self._camera_thread_running = None
@@ -37,6 +49,11 @@ class WebCamCamera(Camera):
         self.img_height = img_height
         self.img_width = img_width
         self.cam_fps = cam_fps
+        # Build the CLAHE object once; reused every frame (thread-safe read).
+        self.use_clahe = use_clahe
+        self._clahe = (cv2.createCLAHE(clipLimit=clahe_clip_limit,
+                                       tileGridSize=clahe_tile_grid_size)
+                       if use_clahe else None)
         self._cap = cv2.VideoCapture()
         # Set the camera resolution and frame rate.
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.img_width)
@@ -73,6 +90,15 @@ class WebCamCamera(Camera):
 
             # Resize the frame to 640x480 if necessary
             frame = cv2.resize(frame, (self.img_width, self.img_height))
+
+            # Optional CLAHE: enhance local contrast on luminance only so
+            # iris/pupil edges are crisper without shifting colour or amplifying
+            # global noise.  Frame is already RGB here, so RGB2LAB is correct.
+            if self.use_clahe:
+                lab = cv2.cvtColor(frame, cv2.COLOR_RGB2LAB)
+                lab[:, :, 0] = self._clahe.apply(lab[:, :, 0])
+                frame = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
+
             # Lock and execute callback function if set.
             try:
                 with self.callback_and_param_lock:
